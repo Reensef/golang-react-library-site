@@ -14,11 +14,11 @@ import {
   Box,
   FlexProps,
   useColorModeValue,
-} from '@chakra-ui/react'
-import { FiMenu, FiBell, FiChevronDown } from 'react-icons/fi'
+} from "@chakra-ui/react";
+import { FiMenu, FiBell, FiChevronDown } from "react-icons/fi";
 
 interface MobileProps extends FlexProps {
-  onOpen: () => void
+  onOpen: () => void;
 }
 
 const MobileNav = ({ onOpen, ...rest }: MobileProps) => {
@@ -28,20 +28,26 @@ const MobileNav = ({ onOpen, ...rest }: MobileProps) => {
       px={{ base: 4, md: 4 }}
       height="20"
       alignItems="center"
-      bg={useColorModeValue('white', 'gray.900')}
-      borderBottomWidth="1px"
-      borderBottomColor={useColorModeValue('gray.200', 'gray.700')}
-      justifyContent={{ base: 'space-between', md: 'flex-end' }}
-      {...rest}>
+      bg={useColorModeValue("white", "gray.900")}
+      // borderBottomWidth="1px"
+      borderBottomColor={useColorModeValue("gray.200", "gray.700")}
+      justifyContent={{ base: "space-between", md: "flex-end" }}
+      {...rest}
+    >
       <IconButton
-        display={{ base: 'flex', md: 'none' }}
+        display={{ base: "flex", md: "none" }}
         onClick={onOpen}
         variant="outline"
         aria-label="open menu"
         icon={<FiMenu />}
       />
       <HStack spacing="6">
-        <IconButton size="lg" variant="ghost" aria-label="open menu" icon={<FiBell />} />
+        <IconButton
+          size="lg"
+          variant="ghost"
+          aria-label="open menu"
+          icon={<FiBell />}
+        />
         <Flex alignItems="center">
           <Menu>
             <MenuButton py={2}>
@@ -68,7 +74,7 @@ const MobileNav = ({ onOpen, ...rest }: MobileProps) => {
         </Flex>
       </HStack>
     </Flex>
-  )
-}
+  );
+};
 
-export default MobileNav
+export default MobileNav;

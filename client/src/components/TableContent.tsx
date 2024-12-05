@@ -7,12 +7,11 @@ import {
   Th,
   Td,
   TableContainer,
-} from '@chakra-ui/react'
+} from "@chakra-ui/react";
 
 const TableContent = () => {
   return (
-        <TableContainer
-        >
+    <TableContainer>
       <Table variant="simple">
         <Thead>
           <Tr>
@@ -39,9 +38,8 @@ const TableContent = () => {
           </Tr>
         </Tbody>
       </Table>
-    </TableContainer>    
-    
-  )
-}
+    </TableContainer>
+  );
+};
 
-export default TableContent
+export default TableContent;
