@@ -18,8 +18,6 @@ import {
 import { ChevronUpIcon, ChevronDownIcon } from "@chakra-ui/icons";
 import { FiMoreVertical } from "react-icons/fi";
 
-type SortDirection = "asc" | "desc" | null;
-
 interface FileData {
   id: number;
   name: string;
@@ -28,6 +26,8 @@ interface FileData {
   size: string;
   downloads: number;
 }
+
+type SortDirection = "asc" | "desc" | null;
 
 const SortButton = ({
   label,
@@ -38,20 +38,18 @@ const SortButton = ({
   sortDirection: SortDirection;
   onClick: () => void;
 }) => {
+  const getSortIcon = () => {
+    if (sortDirection === "asc") return <ChevronUpIcon />;
+    if (sortDirection === "desc") return <ChevronDownIcon />;
+    return undefined; // Иконка отсутствует
+  };
+
   return (
     <Button
       variant="ghost"
       size="sm"
       ml={-3}
-      rightIcon={
-        sortDirection === "asc" ? (
-          <ChevronUpIcon />
-        ) : sortDirection === "desc" ? (
-          <ChevronDownIcon />
-        ) : (
-          <ChevronDownIcon color="gray.300" />
-        )
-      }
+      rightIcon={getSortIcon()}
       onClick={onClick}
     >
       {label}
@@ -116,7 +114,12 @@ const FilesTable = () => {
   const toggleSort = (column: keyof typeof sortDirection) => {
     setSortDirection((prev) => ({
       ...prev,
-      [column]: prev[column] === "asc" ? "desc" : "asc",
+      [column]:
+        prev[column] === "asc"
+          ? "desc"
+          : prev[column] === "desc"
+          ? null
+          : "asc",
     }));
   };
 
@@ -133,7 +136,7 @@ const FilesTable = () => {
               />
             </Th>
 
-            <Th width="30%">
+            <Th width="20%">
               <Menu>
                 <MenuButton
                   as={Button}
@@ -152,7 +155,7 @@ const FilesTable = () => {
               </Menu>
             </Th>
 
-            <Th width="10%">
+            <Th width="15%">
               <SortButton
                 label="Last Updated"
                 sortDirection={sortDirection.updated}
@@ -160,7 +163,7 @@ const FilesTable = () => {
               />
             </Th>
 
-            <Th width="10%">
+            <Th width="15%">
               <SortButton
                 label="Size"
                 sortDirection={sortDirection.size}

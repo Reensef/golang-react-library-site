@@ -4,16 +4,17 @@ import SidebarContent from "./components/SidebarContent";
 import MobileNav from "./components/MobileNav";
 import FilesTable from "./components/FilesTable";
 import UsersActivityTable from "./components/UsersActivityTable";
+import UploadPage from "./components/UploadPage";
 
 import { useColorModeValue } from "@chakra-ui/react";
 
 function App() {
   const { onOpen, onClose } = useDisclosure();
-  const [selectedTable, setSelectedTable] = useState<"files" | "activity">(
-    "files"
-  );
+  const [selectedTable, setSelectedTable] = useState<
+    "allFiles" | "upload" | "activity"
+  >("allFiles");
 
-  const handleTableChange = (table: "files" | "activity") => {
+  const handleTableChange = (table: "allFiles" | "upload" | "activity") => {
     setSelectedTable(table);
   };
 
@@ -31,7 +32,15 @@ function App() {
 
       {/* Main Content Area */}
       <Box ml={{ base: 0, md: 60 }} p="4">
-        {selectedTable === "files" ? <FilesTable /> : <UsersActivityTable />}
+        {selectedTable === "allFiles" ? (
+          <FilesTable />
+        ) : selectedTable === "upload" ? (
+          <UploadPage />
+        ) : selectedTable === "activity" ? (
+          <UsersActivityTable />
+        ) : (
+          <Box></Box>
+        )}
       </Box>
     </Box>
   );

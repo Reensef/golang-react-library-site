@@ -10,10 +10,10 @@ import {
 } from "@chakra-ui/react";
 import NavItem from "./NavItem";
 
-import { LuFile, LuArchive } from "react-icons/lu";
+import { FiFile, FiUpload, FiArchive } from "react-icons/fi";
 
 interface SidebarProps extends BoxProps {
-  onTableChange: (table: "files" | "activity") => void;
+  onTableChange: (table: "allFiles" | "upload" | "activity") => void;
   onClose: () => void;
 }
 
@@ -31,7 +31,7 @@ const SidebarContent = ({ onClose, onTableChange, ...rest }: SidebarProps) => {
       <Flex direction="column" h="full">
         <Flex h="20" alignItems="center" mx="8" justifyContent="space-between">
           <Text fontSize="2xl" fontFamily="monospace" fontWeight="bold">
-            Logo
+            BooLib
           </Text>
           <CloseButton
             display={{ base: "flex", md: "none" }}
@@ -39,12 +39,16 @@ const SidebarContent = ({ onClose, onTableChange, ...rest }: SidebarProps) => {
           />
         </Flex>
 
-        <NavItem icon={LuFile} onClick={() => onTableChange("files")}>
+        <NavItem icon={FiFile} onClick={() => onTableChange("allFiles")}>
           All Files
         </NavItem>
 
+        <NavItem icon={FiUpload} onClick={() => onTableChange("upload")}>
+          Upload
+        </NavItem>
+
         <Box mt="auto" mb="4" width="full">
-          <NavItem icon={LuArchive} onClick={() => onTableChange("activity")}>
+          <NavItem icon={FiArchive} onClick={() => onTableChange("activity")}>
             User Activity
           </NavItem>
         </Box>
