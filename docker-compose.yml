@@ -1,15 +1,25 @@
-version: '3.8'
-
 services:      
   minio:
     image: quay.io/minio/minio
     container_name: minio
     ports:
-      - "9000:9000"
+      - "${BLOB_DB_PORT}:9000"
       - "9001:9001"
     environment:
-      MINIO_ROOT_USER: admin
-      MINIO_ROOT_PASSWORD: adminpassword
+      MINIO_ROOT_USER: ${BLOB_DB_ID}
+      MINIO_ROOT_PASSWORD: ${BLOB_DB_KEY}
     volumes:
-      - ./db_data:/data
+      - ./db_data/minio:/data
     command: server /data --console-address ":9001"
+
+  postgres:
+    image: postgres:15
+    container_name: postgres
+    ports:
+      - "${SQL_DB_PORT}:5432"
+    environment:
+      POSTGRES_DB: ${SQL_DB_NAME}
+      POSTGRES_USER: ${SQL_DB_USER}
+      POSTGRES_PASSWORD: ${SQL_DB_PASSWORD}
+    volumes:
+      - ./db_data/postgres:/var/lib/postgresql/data

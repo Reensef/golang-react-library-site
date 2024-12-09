@@ -14,13 +14,13 @@ func main() {
 	cfg := appConfig{
 		appAddr: env.GetString("ADDR"),
 		sqlDBConfig: sqlDBConfig{
-			addr:         env.GetString("SQL_DB_ADDR"),
+			addr:         env.GetString("SQL_DB_HOST"),
 			maxOpenConns: env.GetInt("SQL_DB_MAX_OPEN_CONNS"),
 			maxIdleConns: env.GetInt("SQL_DB_MAX_IDLE_CONNS"),
 			maxIdleTime:  env.GetString("SQL_DB_MAX_IDLE_TIME"),
 		},
 		blobDBConfig: blobDBConfig{
-			addr: env.GetString("BLOB_DB_ADDR"),
+			addr: env.GetString("BLOB_DB_HOST") + ":" + env.GetString("BLOB_DB_PORT"),
 			id:   env.GetString("BLOB_DB_ID"),
 			key:  env.GetString("BLOB_DB_KEY"),
 		},
