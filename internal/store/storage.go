@@ -1,6 +1,7 @@
 package store
 
 import (
+	"context"
 	"database/sql"
 	"errors"
 	"time"
@@ -14,8 +15,13 @@ var (
 )
 
 type Storage struct {
+	Files interface {
+		GetByID(context.Context, int64) (*File, error)
+	}
 }
 
 func NewStorage(sqlDB *sql.DB, blobDB *db.BlobDB) Storage {
-	return Storage{}
+	return Storage{
+		Files: &FilesStore{sqlDB, blobDB},
+	}
 }

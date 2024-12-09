@@ -6,15 +6,24 @@ import (
 	"github.com/Reensef/golang-react-boolib/internal/db"
 	"github.com/Reensef/golang-react-boolib/internal/env"
 	"github.com/Reensef/golang-react-boolib/internal/store"
+	"github.com/joho/godotenv"
 )
 
 const version = "0.0.1"
 
 func main() {
+	if err := godotenv.Load(); err != nil {
+		log.Fatal("Error loading .env file")
+	}
+
 	cfg := appConfig{
-		appAddr: env.GetString("ADDR"),
+		appAddr: ":" + env.GetString("APP_PORT"),
 		sqlDBConfig: sqlDBConfig{
-			addr:         env.GetString("SQL_DB_HOST"),
+			host:         env.GetString("SQL_DB_HOST"),
+			port:         env.GetString("SQL_DB_PORT"),
+			name:         env.GetString("SQL_DB_NAME"),
+			user:         env.GetString("SQL_DB_USER"),
+			password:     env.GetString("SQL_DB_PASSWORD"),
 			maxOpenConns: env.GetInt("SQL_DB_MAX_OPEN_CONNS"),
 			maxIdleConns: env.GetInt("SQL_DB_MAX_IDLE_CONNS"),
 			maxIdleTime:  env.GetString("SQL_DB_MAX_IDLE_TIME"),
@@ -28,7 +37,7 @@ func main() {
 	}
 
 	sqlDB, err := db.NewSql(
-		cfg.sqlDBConfig.addr,
+		"postgres://"+cfg.sqlDBConfig.user+":"+cfg.sqlDBConfig.password+"@"+cfg.sqlDBConfig.host+":"+cfg.sqlDBConfig.port+"/"+cfg.sqlDBConfig.name+"?sslmode=disable",
 		cfg.sqlDBConfig.maxOpenConns,
 		cfg.sqlDBConfig.maxIdleConns,
 		cfg.sqlDBConfig.maxIdleTime,

@@ -25,7 +25,11 @@ type appConfig struct {
 
 // TODO : move to db package
 type sqlDBConfig struct {
-	addr         string
+	host         string
+	port         string
+	name         string
+	user         string
+	password     string
 	maxOpenConns int
 	maxIdleConns int
 	maxIdleTime  string
@@ -51,6 +55,18 @@ func (app *application) mount() http.Handler {
 	r.Use(middleware.Logger)
 	r.Use(middleware.Recoverer)
 	r.Use(middleware.Timeout(60 * time.Second))
+
+	r.Route("/api/v1", func(r chi.Router) {
+		r.Get("/health", app.healthCheckHandler)
+
+		r.Route("/files", func(r chi.Router) {
+			// r.Post("/", app.uploadFileHandler)
+			r.Get("/{id}", app.getFileHandler)
+			// r.Get("/", app.getFilesHandler)
+			// r.Delete("/{file_id}", app.deleteFileHandler)
+			// r.Patch("/{file_id}", app.updateFileHandler)
+		})
+	})
 
 	return r
 }

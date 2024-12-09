@@ -5,6 +5,8 @@ import (
 	"database/sql"
 	"io"
 	"time"
+
+	_ "github.com/lib/pq"
 )
 
 type BlobDB interface {
