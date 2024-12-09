@@ -31,7 +31,7 @@ type FilesStore struct {
 
 func (s *FilesStore) GetByID(ctx context.Context, id int64) (*File, error) {
 	query := `
-		SELECT f.id, f.name, f.uuid, f.created_by_user_id, u.username, f.created_at, f.updated_at
+		SELECT f.id, f.name, f.uuid, f.size, f.created_by_user_id, u.username, f.created_at, f.updated_at
 		FROM files f
 		JOIN users u ON f.created_by_user_id = u.id
 		WHERE f.id = $1
@@ -50,6 +50,7 @@ func (s *FilesStore) GetByID(ctx context.Context, id int64) (*File, error) {
 		&data.ID,
 		&data.Name,
 		&data.UUID,
+		&data.Size,
 		&data.Creator.ID,
 		&data.Creator.Username,
 		&data.CreatedAt,
