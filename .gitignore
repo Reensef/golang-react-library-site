@@ -2,3 +2,4 @@
 .env
 tmp
 db_data
+bin
