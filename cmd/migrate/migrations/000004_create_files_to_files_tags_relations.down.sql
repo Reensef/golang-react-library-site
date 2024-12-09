@@ -1,0 +1,1 @@
+DROP TABLE IF EXISTS files_to_tags;
