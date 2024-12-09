@@ -1,8 +1,11 @@
 version: '3'
 
+dotenv:
+  - .env
+
 env:
   MIGRATIONS_PATH: ./cmd/migrate/migrations
-  DATABASE_URL: postgres://admin:adminpassword@localhost:5432/boolib?sslmode=disable
+  DATABASE_URL: postgres://$SQL_DB_USER:$SQL_DB_PASSWORD@$SQL_DB_HOST:$SQL_DB_PORT/$SQL_DB_NAME?sslmode=disable
 
 tasks:
   migrate-create:
@@ -25,7 +28,7 @@ tasks:
     vars:
       STEPS: "1"
     cmds:
-      - migrate -path "{{.MIGRATIONS_PATH}}" -database "{{.DATABASE_URL}}" down {{.STEPS}}
+      - migrate -path "{{.MIGRATIONS_PATH}}" -database "{{.DATABASE_URL}}" -verbose down {{.STEPS}}
   
   db-seed:
     desc: "Заполнить базу данными"
