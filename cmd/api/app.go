@@ -42,13 +42,30 @@ type blobDBConfig struct {
 }
 
 var (
-	ErrInvalidCommentID = errors.New("invalid comment ID")
-	ErrInvalidPostID    = errors.New("invalid post ID")
-	ErrInvalidLimit     = errors.New("invalid limit")
+	ErrInvalidFileID = errors.New("invalid file ID")
+	ErrInvalidTagID  = errors.New("invalid tag ID")
 )
+
+func (app *application) enableCORS(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Access-Control-Allow-Origin", "*")
+		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
+		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
+
+		// Обработка preflight-запросов OPTIONS
+		if r.Method == http.MethodOptions {
+			w.WriteHeader(http.StatusNoContent)
+			return
+		}
+
+		next.ServeHTTP(w, r)
+	})
+}
 
 func (app *application) mount() http.Handler {
 	r := chi.NewRouter()
+
+	// r.Use(app.enableCORS)
 
 	r.Use(middleware.RequestID)
 	r.Use(middleware.RealIP)
@@ -60,9 +77,10 @@ func (app *application) mount() http.Handler {
 		r.Get("/health", app.healthCheckHandler)
 
 		r.Route("/files", func(r chi.Router) {
+			r.Get("/tags", app.getTagsHandler)
+			r.Get("/", app.getFilesHandler)
 			// r.Post("/", app.uploadFileHandler)
 			r.Get("/{id}", app.getFileHandler)
-			// r.Get("/", app.getFilesHandler)
 			// r.Delete("/{file_id}", app.deleteFileHandler)
 			// r.Patch("/{file_id}", app.updateFileHandler)
 		})

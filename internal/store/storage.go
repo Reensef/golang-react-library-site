@@ -14,14 +14,27 @@ var (
 	QueryDBTimeout  = time.Second * 5
 )
 
+type SortDirection int
+
+const (
+	AscendingOrder SortDirection = iota
+	DescendingOrder
+	NoOrder
+)
+
 type Storage struct {
 	Files interface {
 		GetByID(context.Context, int64) (*File, error)
+		GetAll(ctx context.Context, sortBy string, sortDirection SortDirection, tagID string) ([]*File, error)
+	}
+	Tags interface {
+		GetAll(context.Context) ([]*Tag, error)
 	}
 }
 
 func NewStorage(sqlDB *sql.DB, blobDB *db.BlobDB) Storage {
 	return Storage{
 		Files: &FilesStore{sqlDB, blobDB},
+		Tags:  &TagsStore{sqlDB},
 	}
 }
