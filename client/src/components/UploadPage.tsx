@@ -1,4 +1,4 @@
-import React from "react";
+// import React from "react";
 import { Box, Text, VStack, Icon, useColorModeValue } from "@chakra-ui/react";
 import { FiUpload } from "react-icons/fi";
 

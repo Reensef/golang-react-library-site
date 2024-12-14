@@ -4,6 +4,8 @@ import (
 	"errors"
 	"log"
 	"net/http"
+	"os"
+	"path/filepath"
 	"time"
 
 	"github.com/Reensef/golang-react-boolib/internal/store"
@@ -73,6 +75,8 @@ func (app *application) mount() http.Handler {
 	r.Use(middleware.Recoverer)
 	r.Use(middleware.Timeout(60 * time.Second))
 
+	r.Handle("/*", http.FileServer(http.Dir(app.static())))
+
 	r.Route("/api/v1", func(r chi.Router) {
 		r.Get("/health", app.healthCheckHandler)
 
@@ -101,4 +105,12 @@ func (app *application) run(mux http.Handler) error {
 	log.Printf("Server has started as %s", app.config.appAddr)
 
 	return srv.ListenAndServe()
+}
+
+func (app *application) static() string {
+	ex, err := os.Executable()
+	if err != nil {
+		log.Fatalf("Failed to find executable path: %v", err)
+	}
+	return filepath.Join(filepath.Dir(ex), "../client/dist")
 }
