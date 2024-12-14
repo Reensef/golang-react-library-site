@@ -1,49 +1,32 @@
-import { /*React,*/ useState } from "react";
-import { Box, useDisclosure } from "@chakra-ui/react";
-import SidebarContent from "./components/SidebarContent";
-import MobileNav from "./components/MobileNav";
-import FilesTable from "./components/FilesTable";
-import UsersActivityTable from "./components/UsersActivityTable";
-import UploadPage from "./components/UploadPage";
+import {
+  BrowserRouter as Router,
+  Route,
+  Routes,
+  Navigate,
+} from "react-router-dom";
+import Dashboard from "./components/Dashboard";
+import LoginPage from "./components/LoginPage";
+import ProtectedRoute from "./components/ProtectedRoute";
 
-import { useColorModeValue } from "@chakra-ui/react";
-
-function App() {
-  const { onOpen, onClose } = useDisclosure();
-  const [selectedTable, setSelectedTable] = useState<
-    "allFiles" | "upload" | "activity"
-  >("allFiles");
-
-  const handleTableChange = (table: "allFiles" | "upload" | "activity") => {
-    setSelectedTable(table);
-  };
-
+const App = () => {
   return (
-    <Box minH="100vh" bg={useColorModeValue("gray.100", "gray.900")}>
-      {/* Sidebar */}
-      <SidebarContent
-        onTableChange={handleTableChange}
-        onClose={onClose}
-        display={{ base: "none", md: "block" }}
-      />
+    <Router>
+      <Routes>
+        <Route path="/loginpage" element={<LoginPage />} />
 
-      {/* Mobile Navigation */}
-      <MobileNav onOpen={onOpen} />
+        <Route
+          path="/dashboard"
+          element={
+            <ProtectedRoute>
+              <Dashboard />
+            </ProtectedRoute>
+          }
+        />
 
-      {/* Main Content Area */}
-      <Box ml={{ base: 0, md: 60 }} p="4">
-        {selectedTable === "allFiles" ? (
-          <FilesTable />
-        ) : selectedTable === "upload" ? (
-          <UploadPage />
-        ) : selectedTable === "activity" ? (
-          <UsersActivityTable />
-        ) : (
-          <Box></Box>
-        )}
-      </Box>
-    </Box>
+        <Route path="/*" element={<Navigate to="/dashboard" replace />} />
+      </Routes>
+    </Router>
   );
-}
+};
 
 export default App;

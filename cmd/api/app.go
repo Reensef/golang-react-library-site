@@ -75,18 +75,23 @@ func (app *application) mount() http.Handler {
 	r.Use(middleware.Recoverer)
 	r.Use(middleware.Timeout(60 * time.Second))
 
-	r.Handle("/*", http.FileServer(http.Dir(app.static())))
+	r.Post("/login", app.loginHandler)
+	r.Handle("/static/*", http.StripPrefix("/static/", http.FileServer(http.Dir(app.static()))))
+	r.Get("/*", func(w http.ResponseWriter, r *http.Request) {
+		http.ServeFile(w, r, app.static()+"/index.html")
+	})
 
 	r.Route("/api/v1", func(r chi.Router) {
+		// r.Use(app.JWTMiddleware)
 		r.Get("/health", app.healthCheckHandler)
 
 		r.Route("/files", func(r chi.Router) {
 			r.Get("/tags", app.getTagsHandler)
 			r.Get("/", app.getFilesHandler)
-			// r.Post("/", app.uploadFileHandler)
+			// protected.Post("/", app.uploadFileHandler)
 			r.Get("/{id}", app.getFileHandler)
-			// r.Delete("/{file_id}", app.deleteFileHandler)
-			// r.Patch("/{file_id}", app.updateFileHandler)
+			// protected.Delete("/{file_id}", app.deleteFileHandler)
+			// protected.Patch("/{file_id}", app.updateFileHandler)
 		})
 	})
 
