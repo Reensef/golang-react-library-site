@@ -30,11 +30,17 @@ type Storage struct {
 	Tags interface {
 		GetAll(context.Context) ([]*Tag, error)
 	}
+	Users interface {
+		GetByID(context.Context, int64) (*User, error)
+		GetByEmail(context.Context, string) (*User, error)
+		Create(context.Context, *User) error
+	}
 }
 
 func NewStorage(sqlDB *sql.DB, blobDB *db.BlobDB) Storage {
 	return Storage{
 		Files: &FilesStore{sqlDB, blobDB},
 		Tags:  &TagsStore{sqlDB},
+		Users: &UsersStore{sqlDB},
 	}
 }

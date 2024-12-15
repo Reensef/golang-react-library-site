@@ -9,18 +9,16 @@ import (
 
 var jwtSecret = []byte("super-secret")
 
-func GenerateJWT(userID string) (string, error) {
-	// Определяем срок действия токена
+func GenerateJWT(userID int64, role string) (string, error) {
 	expirationTime := time.Now().Add(24 * time.Hour)
 
-	// Создаем токен
 	claims := jwt.MapClaims{
 		"userID": userID,
+		"role":   role,
 		"exp":    expirationTime.Unix(),
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 
-	// Подписываем токен
 	return token.SignedString(jwtSecret)
 }
 
