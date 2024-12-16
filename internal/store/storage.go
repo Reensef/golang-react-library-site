@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"mime/multipart"
 	"time"
 
 	"github.com/Reensef/golang-react-boolib/internal/db"
@@ -24,6 +25,7 @@ const (
 
 type Storage struct {
 	Files interface {
+		Create(ctx context.Context, file *File, data multipart.File) error
 		GetByID(context.Context, int64) (*File, error)
 		GetAll(ctx context.Context, sortBy string, sortDirection SortDirection, tagID string) ([]*File, error)
 	}
@@ -37,7 +39,7 @@ type Storage struct {
 	}
 }
 
-func NewStorage(sqlDB *sql.DB, blobDB *db.BlobDB) Storage {
+func NewStorage(sqlDB *sql.DB, blobDB db.BlobDB) Storage {
 	return Storage{
 		Files: &FilesStore{sqlDB, blobDB},
 		Tags:  &TagsStore{sqlDB},

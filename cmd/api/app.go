@@ -90,6 +90,7 @@ func (app *application) mount() http.Handler {
 			r.Get("/", app.getFilesHandler)
 			// r.Post("/", app.uploadFileHandler)
 			r.Get("/{id}", app.getFileHandler)
+			r.Post("/upload", app.uploadFileHandler)
 			// r.Delete("/{file_id}", app.deleteFileHandler)
 			// r.Patch("/{file_id}", app.updateFileHandler)
 		})

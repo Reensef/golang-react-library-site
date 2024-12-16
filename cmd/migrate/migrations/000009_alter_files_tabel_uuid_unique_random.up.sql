@@ -1,0 +1,7 @@
+CREATE EXTENSION IF NOT EXISTS "pgcrypto";
+
+ALTER TABLE files
+ALTER COLUMN uuid SET DEFAULT gen_random_uuid();
+
+ALTER TABLE files
+ADD CONSTRAINT unique_uuid UNIQUE (uuid);

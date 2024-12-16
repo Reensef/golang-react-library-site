@@ -57,7 +57,7 @@ func main() {
 		log.Panic(err)
 	}
 
-	store := store.NewStorage(sqlDB, &blobDB)
+	store := store.NewStorage(sqlDB, blobDB)
 
 	app := &application{
 		config: cfg,

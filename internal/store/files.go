@@ -6,21 +6,27 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"mime/multipart"
 
 	"github.com/Reensef/golang-react-boolib/internal/db"
 	"github.com/gofrs/uuid"
 )
 
+const (
+	FilesBucketName = "files"
+)
+
 type File struct {
-	ID        int64       `json:"id" validate:"required"`
-	Name      string      `json:"name" validate:"required"`
-	Size      int64       `json:"size" validate:"required"`
-	Creator   FileCreator `json:"creator" validate:"required"`
-	UUID      uuid.UUID   `json:"uuid" validate:"required"`
-	Tag       string      `json:"tag"`
-	Downloads int64       `json:"downloads"`
-	CreatedAt string      `json:"created_at"`
-	UpdatedAt string      `json:"updated_at"`
+	ID          int64       `json:"id" validate:"required"`
+	Name        string      `json:"name" validate:"required"`
+	Size        int64       `json:"size" validate:"required"`
+	Creator     FileCreator `json:"creator" validate:"required"`
+	UUID        uuid.UUID   `json:"uuid"`
+	Tag         string      `json:"tag"`
+	ContentType string      `json:"content_type"`
+	Downloads   int64       `json:"downloads"`
+	CreatedAt   string      `json:"created_at"`
+	UpdatedAt   string      `json:"updated_at"`
 }
 
 type FileCreator struct {
@@ -30,7 +36,41 @@ type FileCreator struct {
 
 type FilesStore struct {
 	sqlDB  *sql.DB
-	blobDB *db.BlobDB
+	blobDB db.BlobDB
+}
+
+func (s *FilesStore) Create(ctx context.Context, file *File, data multipart.File) error {
+	query := `
+		INSERT INTO files (name, size, created_by_user_id)
+		VALUES ($1, $2, $3) RETURNING id, (SELECT username FROM users WHERE id = $3), uuid, created_at, updated_at
+	`
+	ctx, cancel := context.WithTimeout(ctx, QueryDBTimeout)
+	defer cancel()
+
+	err := s.sqlDB.QueryRowContext(
+		ctx,
+		query,
+		file.Name,
+		file.Size,
+		file.Creator.ID,
+	).Scan(
+		&file.ID,
+		&file.Creator.Username,
+		&file.UUID,
+		&file.CreatedAt,
+		&file.UpdatedAt,
+	)
+
+	if err != nil {
+		return err
+	}
+
+	err = s.blobDB.UploadFile(context.Background(), FilesBucketName, file.UUID.String(), data, file.Size, file.ContentType)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (s *FilesStore) GetByID(ctx context.Context, id int64) (*File, error) {

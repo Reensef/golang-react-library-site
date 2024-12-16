@@ -9,6 +9,10 @@ import (
 	"github.com/go-chi/chi/v5"
 )
 
+var (
+	ErrFileUploadFailed = errors.New("failed upload file")
+)
+
 func (app *application) getFileHandler(w http.ResponseWriter, r *http.Request) {
 	IDParam := chi.URLParam(r, "id")
 	ID, err := strconv.ParseInt(IDParam, 10, 64)
@@ -56,6 +60,36 @@ func (app *application) getFilesHandler(w http.ResponseWriter, r *http.Request) 
 	}
 
 	if err := jsonDataResponse(w, http.StatusOK, data); err != nil {
+		app.internalServerErrorResponse(w, r, err)
+	}
+}
+
+func (app *application) uploadFileHandler(w http.ResponseWriter, r *http.Request) {
+	uploadFile, fileHeader, err := r.FormFile("file")
+	if err != nil {
+		app.badRequestResponse(w, r, err)
+		return
+	}
+	fileTag := r.FormValue("tag")
+	defer uploadFile.Close()
+
+	file := store.File{
+		Name: fileHeader.Filename,
+		Size: fileHeader.Size,
+		Creator: store.FileCreator{
+			ID: 11, // TODO Get from tocken
+		},
+		Tag:         fileTag,
+		ContentType: fileHeader.Header.Get("Content-Type"),
+	}
+
+	err = app.store.Files.Create(r.Context(), &file, uploadFile)
+	if err != nil {
+		app.internalServerErrorResponse(w, r, err)
+		return
+	}
+
+	if err := jsonDataResponse(w, http.StatusOK, file); err != nil {
 		app.internalServerErrorResponse(w, r, err)
 	}
 }

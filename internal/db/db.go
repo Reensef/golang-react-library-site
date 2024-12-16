@@ -46,6 +46,7 @@ func NewSql(
 }
 
 func NewBlob(addr, accessKeyID, secretAccessKey string) (BlobDB, error) {
+	var client BlobDB
 	client, err := NewMinioBlobStore(addr, accessKeyID, secretAccessKey, false)
 	if err != nil {
 		return nil, err
