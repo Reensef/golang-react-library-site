@@ -64,6 +64,26 @@ func (app *application) getFilesHandler(w http.ResponseWriter, r *http.Request) 
 	}
 }
 
+func (app *application) accessFileHandler(w http.ResponseWriter, r *http.Request) {
+	IDParam := chi.URLParam(r, "id")
+	ID, err := strconv.ParseInt(IDParam, 10, 64)
+	if err != nil {
+		app.badRequestResponse(w, r, ErrInvalidFileID)
+		return
+	}
+
+	link, err := app.store.Files.GetAccessLinkByID(r.Context(), ID)
+
+	if err != nil {
+		app.internalServerErrorResponse(w, r, err)
+		return
+	}
+
+	if err := jsonDataResponse(w, http.StatusOK, link.String()); err != nil {
+		app.internalServerErrorResponse(w, r, err)
+	}
+}
+
 func (app *application) uploadFileHandler(w http.ResponseWriter, r *http.Request) {
 	uploadFile, fileHeader, err := r.FormFile("file")
 	if err != nil {
@@ -77,7 +97,7 @@ func (app *application) uploadFileHandler(w http.ResponseWriter, r *http.Request
 		Name: fileHeader.Filename,
 		Size: fileHeader.Size,
 		Creator: store.FileCreator{
-			ID: 11, // TODO Get from tocken
+			ID: 13, // TODO Get from tocken
 		},
 		Tag:         fileTag,
 		ContentType: fileHeader.Header.Get("Content-Type"),

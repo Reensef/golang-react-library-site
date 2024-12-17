@@ -3,6 +3,8 @@ package db
 import (
 	"context"
 	"io"
+	"net/url"
+	"time"
 
 	"github.com/minio/minio-go/v7"
 	"github.com/minio/minio-go/v7/pkg/credentials"
@@ -11,6 +13,10 @@ import (
 type MinioBlobStore struct {
 	client *minio.Client
 }
+
+const (
+	linkExpiresTime = time.Minute * 5
+)
 
 func NewMinioBlobStore(endpoint, accessKey, secretKey string, useSSL bool) (*MinioBlobStore, error) {
 	client, err := minio.New(endpoint, &minio.Options{
@@ -30,8 +36,17 @@ func (m *MinioBlobStore) UploadFile(ctx context.Context, bucketName, objectName 
 	return err
 }
 
-func (m *MinioBlobStore) DownloadFile(ctx context.Context, bucketName, objectName string) (io.ReadCloser, error) {
+func (m *MinioBlobStore) GetReader(ctx context.Context, bucketName, objectName string) (io.ReadCloser, error) {
 	return m.client.GetObject(ctx, bucketName, objectName, minio.GetObjectOptions{})
+}
+
+func (m *MinioBlobStore) GetAccessLink(ctx context.Context, bucketName, objectName string) (*url.URL, error) {
+	presignedURL, err := m.client.PresignedGetObject(context.Background(), bucketName, objectName, linkExpiresTime, url.Values{})
+	if err != nil {
+		return &url.URL{}, err
+	}
+
+	return presignedURL, nil
 }
 
 func (m *MinioBlobStore) DeleteFile(ctx context.Context, bucketName, objectName string) error {

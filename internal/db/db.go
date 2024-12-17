@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"io"
+	"net/url"
 	"time"
 
 	_ "github.com/lib/pq"
@@ -11,7 +12,8 @@ import (
 
 type BlobDB interface {
 	UploadFile(ctx context.Context, bucketName, objectName string, file io.Reader, size int64, contentType string) error
-	DownloadFile(ctx context.Context, bucketName, objectName string) (io.ReadCloser, error)
+	GetReader(ctx context.Context, bucketName, objectName string) (io.ReadCloser, error)
+	GetAccessLink(ctx context.Context, bucketName, objectName string) (*url.URL, error)
 	DeleteFile(ctx context.Context, bucketName, objectName string) error
 }
 

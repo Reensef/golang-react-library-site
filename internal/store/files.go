@@ -5,8 +5,8 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"log"
 	"mime/multipart"
+	"net/url"
 
 	"github.com/Reensef/golang-react-boolib/internal/db"
 	"github.com/gofrs/uuid"
@@ -16,6 +16,7 @@ const (
 	FilesBucketName = "files"
 )
 
+// TODO получать tag, contentType, updated из minIO
 type File struct {
 	ID          int64       `json:"id" validate:"required"`
 	Name        string      `json:"name" validate:"required"`
@@ -73,6 +74,39 @@ func (s *FilesStore) Create(ctx context.Context, file *File, data multipart.File
 	return nil
 }
 
+func (s *FilesStore) GetAccessLinkByID(ctx context.Context, id int64) (*url.URL, error) {
+	query := `
+		SELECT f.uuid
+		FROM files f
+		WHERE f.id = $1
+	`
+	ctx, cancel := context.WithTimeout(ctx, QueryDBTimeout)
+	defer cancel()
+
+	row := s.sqlDB.QueryRowContext(ctx, query, id)
+	if row.Err() != nil {
+		return &url.URL{}, errors.Join(ErrDataNotFound, row.Err())
+	}
+
+	var uuid string
+
+	err := row.Scan(
+		&uuid,
+	)
+
+	if err != nil {
+		return &url.URL{}, err
+	}
+
+	presignedURL, err := s.blobDB.GetAccessLink(context.Background(), FilesBucketName, uuid)
+	if err != nil {
+		return &url.URL{}, err
+	}
+
+	return presignedURL, nil
+
+}
+
 func (s *FilesStore) GetByID(ctx context.Context, id int64) (*File, error) {
 	query := `
 		SELECT f.id, f.name, f.uuid, t.name, f.size, f.created_by_user_id, users.username, f.created_at, f.updated_at
@@ -113,12 +147,12 @@ func (s *FilesStore) GetByID(ctx context.Context, id int64) (*File, error) {
 func (s *FilesStore) GetAll(ctx context.Context, sortBy string, sortDirection SortDirection, tagID string) ([]*File, error) {
 	query := `
 		SELECT 
-			f.id, f.name, f.uuid, files_tags.name, f.size, f.created_by_user_id, 
-			users.username, f.downloads, f.created_at, f.updated_at
+		f.id, f.name, f.uuid, COALESCE(files_tags.name, ''), f.size, f.created_by_user_id, 
+		users.username, f.downloads, f.created_at, f.updated_at
 		FROM files f
 		JOIN users ON f.created_by_user_id = users.id
-		JOIN file_to_tags ON file_to_tags.file_id = f.id
-		JOIN files_tags ON file_to_tags.tag_id = files_tags.id
+		LEFT JOIN file_to_tags ON file_to_tags.file_id = f.id
+		LEFT JOIN files_tags ON file_to_tags.tag_id = files_tags.id
 	`
 	args := []interface{}{}
 
@@ -147,9 +181,6 @@ func (s *FilesStore) GetAll(ctx context.Context, sortBy string, sortDirection So
 			return nil, fmt.Errorf("invalid sortBy value: %s", sortBy)
 		}
 	}
-
-	log.Println(query)
-	log.Println(args)
 
 	ctx, cancel := context.WithTimeout(ctx, QueryDBTimeout)
 	defer cancel()

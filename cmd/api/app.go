@@ -82,7 +82,7 @@ func (app *application) mount() http.Handler {
 	})
 
 	r.Route("/api/v1", func(r chi.Router) {
-		// r.Use(app.JWTMiddleware)
+		r.Use(app.JWTMiddleware)
 		r.Get("/health", app.healthCheckHandler)
 
 		r.Route("/files", func(r chi.Router) {
@@ -90,6 +90,8 @@ func (app *application) mount() http.Handler {
 			r.Get("/", app.getFilesHandler)
 			// r.Post("/", app.uploadFileHandler)
 			r.Get("/{id}", app.getFileHandler)
+			r.Get("/access/{id}", app.accessFileHandler)
+			// r.Get("/open/{id}", app.openFileHandler)
 			r.Post("/upload", app.uploadFileHandler)
 			// r.Delete("/{file_id}", app.deleteFileHandler)
 			// r.Patch("/{file_id}", app.updateFileHandler)

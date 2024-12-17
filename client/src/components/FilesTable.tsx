@@ -129,7 +129,11 @@ const FilesTable = () => {
         if (selectedTagId != null) {
           params["tag_id"] = selectedTagId;
         }
+        const token = localStorage.getItem("token");
         const response = await axios.get("/api/v1/files", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
           params: params,
         });
 
@@ -156,8 +160,15 @@ const FilesTable = () => {
   useEffect(() => {
     const fetchTags = async () => {
       try {
-        const response = await axios.get("/api/v1/files/tags");
-        setTags(response.data.data); // Предполагаем, что сервер возвращает список тегов
+        const token = localStorage.getItem("token");
+
+        const response = await axios.get("/api/v1/files/tags", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        setTags(response.data.data);
       } catch (error) {
         console.error("Error loading tags from the server: ", error);
       }

@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"errors"
 	"mime/multipart"
+	"net/url"
 	"time"
 
 	"github.com/Reensef/golang-react-boolib/internal/db"
@@ -23,9 +24,12 @@ const (
 	NoOrder
 )
 
+// TODO Добавить транзакции для совместных запросов sql и blob
 type Storage struct {
 	Files interface {
 		Create(ctx context.Context, file *File, data multipart.File) error
+		GetAccessLinkByID(context.Context, int64) (*url.URL, error)
+		// GetOpenLinkByID(context.Context, int64) (string, error)
 		GetByID(context.Context, int64) (*File, error)
 		GetAll(ctx context.Context, sortBy string, sortDirection SortDirection, tagID string) ([]*File, error)
 	}
