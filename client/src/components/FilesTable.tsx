@@ -63,25 +63,6 @@ const SortButton = ({
   );
 };
 
-// const ActionsMenu = () => {
-//   return (
-//     <Menu>
-//       <MenuButton
-//         as={IconButton}
-//         aria-label="Actions"
-//         icon={<FiMoreVertical />}
-//         variant="ghost"
-//       />
-//       <MenuList>
-//         <MenuItem onClick={() => handleFileDownload(file.id)}>
-//           Download
-//         </MenuItem>
-//         <MenuItem>Delete</MenuItem>
-//       </MenuList>
-//     </Menu>
-//   );
-// };
-
 const formatFileSize = (sizeInKB: number) => {
   if (sizeInKB >= 1024) {
     const sizeInMB = sizeInKB / 1024;
@@ -156,7 +137,7 @@ const FilesTable = () => {
 
   useEffect(() => {
     fetchFiles();
-  }, [sortParams, selectedTagId]);
+  }, []);
 
   useEffect(() => {
     const fetchTags = async () => {
