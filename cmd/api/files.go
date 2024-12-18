@@ -113,3 +113,20 @@ func (app *application) uploadFileHandler(w http.ResponseWriter, r *http.Request
 		app.internalServerErrorResponse(w, r, err)
 	}
 }
+
+func (app *application) deleteFileHandler(w http.ResponseWriter, r *http.Request) {
+	IDParam := chi.URLParam(r, "id")
+	ID, err := strconv.ParseInt(IDParam, 10, 64)
+	if err != nil {
+		app.badRequestResponse(w, r, ErrInvalidFileID)
+		return
+	}
+
+	err = app.store.Files.DeleteByID(r.Context(), ID)
+	if err != nil {
+		app.internalServerErrorResponse(w, r, err)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+}

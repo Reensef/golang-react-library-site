@@ -29,9 +29,9 @@ type Storage struct {
 	Files interface {
 		Create(ctx context.Context, file *File, data multipart.File) error
 		GetAccessLinkByID(context.Context, int64) (*url.URL, error)
-		// GetOpenLinkByID(context.Context, int64) (string, error)
 		GetByID(context.Context, int64) (*File, error)
 		GetAll(ctx context.Context, sortBy string, sortDirection SortDirection, tagID string) ([]*File, error)
+		DeleteByID(context.Context, int64) error
 	}
 	Tags interface {
 		GetAll(context.Context) ([]*Tag, error)

@@ -63,23 +63,24 @@ const SortButton = ({
   );
 };
 
-const ActionsMenu = () => {
-  return (
-    <Menu>
-      <MenuButton
-        as={IconButton}
-        aria-label="Actions"
-        icon={<FiMoreVertical />}
-        variant="ghost"
-      />
-      <MenuList>
-        <MenuItem>Download</MenuItem>
-        <MenuItem>Rename</MenuItem>
-        <MenuItem>Delete</MenuItem>
-      </MenuList>
-    </Menu>
-  );
-};
+// const ActionsMenu = () => {
+//   return (
+//     <Menu>
+//       <MenuButton
+//         as={IconButton}
+//         aria-label="Actions"
+//         icon={<FiMoreVertical />}
+//         variant="ghost"
+//       />
+//       <MenuList>
+//         <MenuItem onClick={() => handleFileDownload(file.id)}>
+//           Download
+//         </MenuItem>
+//         <MenuItem>Delete</MenuItem>
+//       </MenuList>
+//     </Menu>
+//   );
+// };
 
 const formatFileSize = (sizeInKB: number) => {
   if (sizeInKB >= 1024) {
@@ -119,41 +120,41 @@ const FilesTable = () => {
     downloads: number;
   }
 
-  useEffect(() => {
-    const fetchFiles = async () => {
-      try {
-        const params: { [key: string]: string | number } = {
-          sort_by: sortParams.column,
-          sort_direction: sortParams.direction,
-        };
-        if (selectedTagId != null) {
-          params["tag_id"] = selectedTagId;
-        }
-        const token = localStorage.getItem("token");
-        const response = await axios.get("/api/v1/files", {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-          params: params,
-        });
-
-        const data = response.data.data;
-
-        const formattedData = data.map((item: ServerFileData) => ({
-          id: item.id,
-          name: item.name,
-          tag: item.tag,
-          updated_at: new Date(item.updated_at).toLocaleDateString(),
-          size: formatFileSize(item.size),
-          downloads: item.downloads,
-        }));
-
-        setFiles(formattedData);
-      } catch (error) {
-        console.error("Error loading data from the server: ", error);
+  const fetchFiles = async () => {
+    try {
+      const params: { [key: string]: string | number } = {
+        sort_by: sortParams.column,
+        sort_direction: sortParams.direction,
+      };
+      if (selectedTagId != null) {
+        params["tag_id"] = selectedTagId;
       }
-    };
+      const token = localStorage.getItem("token");
+      const response = await axios.get("/api/v1/files", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        params: params,
+      });
 
+      const data = response.data.data;
+
+      const formattedData = data.map((item: ServerFileData) => ({
+        id: item.id,
+        name: item.name,
+        tag: item.tag,
+        updated_at: new Date(item.updated_at).toLocaleDateString(),
+        size: formatFileSize(item.size),
+        downloads: item.downloads,
+      }));
+
+      setFiles(formattedData);
+    } catch (error) {
+      console.error("Error loading data from the server: ", error);
+    }
+  };
+
+  useEffect(() => {
     fetchFiles();
   }, [sortParams, selectedTagId]);
 
@@ -208,6 +209,57 @@ const FilesTable = () => {
 
   const resetTagFilter = () => {
     setSelectedTagId(null);
+  };
+
+  const handleFileClick = async (id: number) => {
+    try {
+      const token = localStorage.getItem("token");
+      const response = await axios.get(`/api/v1/files/access/${id}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const link = response.data.data;
+      window.open(link, "_blank"); // Открываем ссылку в новом окне
+    } catch (error) {
+      console.error("Error getting file link: ", error);
+    }
+  };
+
+  const handleFileDownload = async (id: number) => {
+    try {
+      const token = localStorage.getItem("token");
+      const response = await axios.get(`/api/v1/files/access/${id}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        responseType: "blob", // Для загрузки файла
+      });
+
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", "file"); // Укажите имя файла
+      document.body.appendChild(link);
+      link.click();
+    } catch (error) {
+      console.error("Error downloading file: ", error);
+    }
+  };
+
+  const handleFileDelete = async (id: number) => {
+    try {
+      const token = localStorage.getItem("token");
+      await axios.delete(`/api/v1/files/${id}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      fetchFiles();
+    } catch (error) {
+      console.error("Error deleting file: ", error);
+    }
   };
 
   return (
@@ -286,8 +338,10 @@ const FilesTable = () => {
         </Thead>
         <Tbody>
           {files.map((file) => (
-            <Tr key={file.id}>
-              <Td>{file.name}</Td>
+            <Tr key={file.id} _hover={{ bg: "gray.200" }}>
+              <Td onClick={() => handleFileClick(file.id)} cursor="pointer">
+                {file.name}
+              </Td>
               <Td>
                 <Badge colorScheme="blue">{file.tag}</Badge>
               </Td>
@@ -295,7 +349,22 @@ const FilesTable = () => {
               <Td>{file.size}</Td>
               <Td>{file.downloads}</Td>
               <Td>
-                <ActionsMenu />
+                <Menu>
+                  <MenuButton
+                    as={IconButton}
+                    aria-label="Actions"
+                    icon={<FiMoreVertical />}
+                    variant="ghost"
+                  />
+                  <MenuList>
+                    <MenuItem onClick={() => handleFileDownload(file.id)}>
+                      Download
+                    </MenuItem>
+                    <MenuItem onClick={() => handleFileDelete(file.id)}>
+                      Delete
+                    </MenuItem>
+                  </MenuList>
+                </Menu>
               </Td>
             </Tr>
           ))}

@@ -215,3 +215,32 @@ func (s *FilesStore) GetAll(ctx context.Context, sortBy string, sortDirection So
 
 	return datas, nil
 }
+
+func (s *FilesStore) DeleteByID(ctx context.Context, id int64) error {
+	query := `
+		DELETE FROM files WHERE id = $1
+		RETURNING files.uuid
+	`
+	ctx, cancel := context.WithTimeout(ctx, QueryDBTimeout)
+	defer cancel()
+
+	row := s.sqlDB.QueryRowContext(ctx, query, id)
+	if row.Err() != nil {
+		return errors.Join(ErrDataNotFound, row.Err())
+	}
+
+	var uuid string
+	err := row.Scan(
+		&uuid,
+	)
+	if err != nil {
+		return err
+	}
+
+	err = s.blobDB.DeleteFile(ctx, FilesBucketName, uuid)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}

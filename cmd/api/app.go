@@ -81,20 +81,21 @@ func (app *application) mount() http.Handler {
 		http.ServeFile(w, r, app.static()+"/index.html")
 	})
 
+	// TODO Добавить возврат правильного состояния
 	r.Route("/api/v1", func(r chi.Router) {
-		r.Use(app.JWTMiddleware)
+		// r.Use(app.JWTMiddleware)
 		r.Get("/health", app.healthCheckHandler)
 
 		r.Route("/files", func(r chi.Router) {
-			r.Get("/tags", app.getTagsHandler)
+			r.Post("/upload", app.uploadFileHandler)
+
 			r.Get("/", app.getFilesHandler)
-			// r.Post("/", app.uploadFileHandler)
 			r.Get("/{id}", app.getFileHandler)
 			r.Get("/access/{id}", app.accessFileHandler)
-			// r.Get("/open/{id}", app.openFileHandler)
-			r.Post("/upload", app.uploadFileHandler)
-			// r.Delete("/{file_id}", app.deleteFileHandler)
-			// r.Patch("/{file_id}", app.updateFileHandler)
+
+			r.Get("/tags", app.getTagsHandler)
+
+			r.Delete("/{id}", app.deleteFileHandler)
 		})
 
 		r.Route("/users", func(r chi.Router) {
