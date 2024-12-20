@@ -16,7 +16,6 @@ const (
 	FilesBucketName = "files"
 )
 
-// TODO получать tag, contentType, updated из minIO
 type File struct {
 	ID          int64       `json:"id" validate:"required"`
 	Name        string      `json:"name" validate:"required"`
@@ -153,11 +152,12 @@ func (s *FilesStore) GetAll(ctx context.Context, sortBy string, sortDirection So
 		JOIN users ON f.created_by_user_id = users.id
 		LEFT JOIN file_to_tags ON file_to_tags.file_id = f.id
 		LEFT JOIN files_tags ON file_to_tags.tag_id = files_tags.id
+		WHERE f.is_deleted = false
 	`
 	args := []interface{}{}
 
 	if tagID != "" {
-		query += " WHERE files_tags.id = $1"
+		query += " AND files_tags.id = $1"
 		args = append(args, tagID)
 	}
 
@@ -218,8 +218,9 @@ func (s *FilesStore) GetAll(ctx context.Context, sortBy string, sortDirection So
 
 func (s *FilesStore) DeleteByID(ctx context.Context, id int64) error {
 	query := `
-		DELETE FROM files WHERE id = $1
-		RETURNING files.uuid
+		UPDATE files SET is_deleted = true, updated_at = CURRENT_TIMESTAMP
+		WHERE files.id = $1
+		RETURNING uuid
 	`
 	ctx, cancel := context.WithTimeout(ctx, QueryDBTimeout)
 	defer cancel()

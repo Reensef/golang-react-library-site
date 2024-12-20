@@ -41,12 +41,16 @@ type Storage struct {
 		GetByEmail(context.Context, string) (*User, error)
 		Create(context.Context, *User) error
 	}
+	FilesActionsLog interface {
+		Create(context.Context, *FileActionLog) error
+	}
 }
 
 func NewStorage(sqlDB *sql.DB, blobDB db.BlobDB) Storage {
 	return Storage{
-		Files: &FilesStore{sqlDB, blobDB},
-		Tags:  &TagsStore{sqlDB},
-		Users: &UsersStore{sqlDB},
+		Files:           &FilesStore{sqlDB, blobDB},
+		Tags:            &TagsStore{sqlDB},
+		Users:           &UsersStore{sqlDB},
+		FilesActionsLog: &FilesActionsLogStore{sqlDB},
 	}
 }

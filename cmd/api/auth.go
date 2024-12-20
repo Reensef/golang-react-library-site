@@ -1,11 +1,13 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"log"
 	"net/http"
 
 	"github.com/Reensef/golang-react-boolib/internal/auth"
+	"github.com/golang-jwt/jwt/v5"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -58,6 +60,18 @@ func (app *application) JWTMiddleware(next http.Handler) http.Handler {
 			return
 		}
 
-		next.ServeHTTP(w, r)
+		claims, ok := token.Claims.(jwt.MapClaims)
+		if !ok {
+			http.Error(w, "Unauthorized", http.StatusUnauthorized)
+			return
+		}
+
+		userInfo := UserCtxInfo{
+			ID:   int64(claims["userID"].(float64)),
+			Role: claims["role"].(string),
+		}
+
+		ctx := context.WithValue(r.Context(), userInfoCtxKey, userInfo)
+		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }

@@ -44,3 +44,5 @@ func (app *application) resourceNotFoundResponse(w http.ResponseWriter, r *http.
 	)
 	jsonErrorResponse(w, http.StatusNotFound, "Not found")
 }
+
+// TODO добавить ошибку авторизации

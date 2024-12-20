@@ -195,7 +195,7 @@ const FilesTable = () => {
   const handleFileClick = async (id: number) => {
     try {
       const token = localStorage.getItem("token");
-      const response = await axios.get(`/api/v1/files/access/${id}`, {
+      const response = await axios.get(`/api/v1/files/open/${id}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -211,7 +211,7 @@ const FilesTable = () => {
   const handleFileDownload = async (id: number) => {
     try {
       const token = localStorage.getItem("token");
-      const response = await axios.get(`/api/v1/files/access/${id}`, {
+      const response = await axios.get(`/api/v1/files/download/${id}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -280,6 +280,7 @@ const FilesTable = () => {
                         } else {
                           setSelectedTagId(tag.id);
                         }
+                        fetchFiles();
                       }}
                       color={selectedTagId === tag.id ? "orange" : "gray.500"}
                     >

@@ -48,6 +48,17 @@ var (
 	ErrInvalidTagID  = errors.New("invalid tag ID")
 )
 
+type contextKey string
+
+const (
+	userInfoCtxKey contextKey = "userInfo"
+)
+
+type UserCtxInfo struct {
+	ID   int64
+	Role string
+}
+
 func (app *application) enableCORS(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Access-Control-Allow-Origin", "*")
@@ -81,9 +92,9 @@ func (app *application) mount() http.Handler {
 		http.ServeFile(w, r, app.static()+"/index.html")
 	})
 
-	// TODO Добавить возврат правильного состояния
+	// TODO Проверить возвраты состояний
 	r.Route("/api/v1", func(r chi.Router) {
-		// r.Use(app.JWTMiddleware)
+		r.Use(app.JWTMiddleware)
 		r.Get("/health", app.healthCheckHandler)
 
 		r.Route("/files", func(r chi.Router) {
@@ -91,7 +102,8 @@ func (app *application) mount() http.Handler {
 
 			r.Get("/", app.getFilesHandler)
 			r.Get("/{id}", app.getFileHandler)
-			r.Get("/access/{id}", app.accessFileHandler)
+			r.Get("/download/{id}", app.downloadFileHandler)
+			r.Get("/open/{id}", app.openFileHandler)
 
 			r.Get("/tags", app.getTagsHandler)
 

@@ -20,6 +20,34 @@ type UsersStore struct {
 	sqlDB *sql.DB
 }
 
+func (s *UsersStore) Create(ctx context.Context, user *User) error {
+	query := `
+		INSERT INTO users (username, email, password, role)
+		VALUES ($1, $2, $3, $4) RETURNING id, created_at, updated_at
+	`
+	ctx, cancel := context.WithTimeout(ctx, QueryDBTimeout)
+	defer cancel()
+
+	err := s.sqlDB.QueryRowContext(
+		ctx,
+		query,
+		user.Username,
+		user.Email,
+		user.Password,
+		user.Role,
+	).Scan(
+		&user.ID,
+		&user.CreatedAt,
+		&user.UpdatedAt,
+	)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (s *UsersStore) GetByID(ctx context.Context, id int64) (*User, error) {
 	query := `
 		SELECT u.id, u.email, u.username, u.password, u.role, u.created_at, u.updated_at
@@ -82,32 +110,4 @@ func (s *UsersStore) GetByEmail(ctx context.Context, email string) (*User, error
 	}
 
 	return data, nil
-}
-
-func (s *UsersStore) Create(ctx context.Context, user *User) error {
-	query := `
-		INSERT INTO users (username, email, password, role)
-		VALUES ($1, $2, $3, $4) RETURNING id, created_at, updated_at
-	`
-	ctx, cancel := context.WithTimeout(ctx, QueryDBTimeout)
-	defer cancel()
-
-	err := s.sqlDB.QueryRowContext(
-		ctx,
-		query,
-		user.Username,
-		user.Email,
-		user.Password,
-		user.Role,
-	).Scan(
-		&user.ID,
-		&user.CreatedAt,
-		&user.UpdatedAt,
-	)
-
-	if err != nil {
-		return err
-	}
-
-	return nil
 }

@@ -64,7 +64,13 @@ func (app *application) getFilesHandler(w http.ResponseWriter, r *http.Request) 
 	}
 }
 
-func (app *application) accessFileHandler(w http.ResponseWriter, r *http.Request) {
+func (app *application) downloadFileHandler(w http.ResponseWriter, r *http.Request) {
+	userInfo, ok := r.Context().Value(userInfoCtxKey).(UserCtxInfo)
+	if !ok {
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
+
 	IDParam := chi.URLParam(r, "id")
 	ID, err := strconv.ParseInt(IDParam, 10, 64)
 	if err != nil {
@@ -73,8 +79,42 @@ func (app *application) accessFileHandler(w http.ResponseWriter, r *http.Request
 	}
 
 	link, err := app.store.Files.GetAccessLinkByID(r.Context(), ID)
-
 	if err != nil {
+		app.internalServerErrorResponse(w, r, err)
+		return
+	}
+
+	if err = app.logDownloadedFile(r.Context(), userInfo.ID, ID); err != nil {
+		app.internalServerErrorResponse(w, r, err)
+		return
+	}
+
+	if err := jsonDataResponse(w, http.StatusOK, link.String()); err != nil {
+		app.internalServerErrorResponse(w, r, err)
+	}
+}
+
+func (app *application) openFileHandler(w http.ResponseWriter, r *http.Request) {
+	userInfo, ok := r.Context().Value(userInfoCtxKey).(UserCtxInfo)
+	if !ok {
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
+
+	IDParam := chi.URLParam(r, "id")
+	ID, err := strconv.ParseInt(IDParam, 10, 64)
+	if err != nil {
+		app.badRequestResponse(w, r, ErrInvalidFileID)
+		return
+	}
+
+	link, err := app.store.Files.GetAccessLinkByID(r.Context(), ID)
+	if err != nil {
+		app.internalServerErrorResponse(w, r, err)
+		return
+	}
+
+	if err = app.logOpenedFile(r.Context(), userInfo.ID, ID); err != nil {
 		app.internalServerErrorResponse(w, r, err)
 		return
 	}
@@ -85,6 +125,12 @@ func (app *application) accessFileHandler(w http.ResponseWriter, r *http.Request
 }
 
 func (app *application) uploadFileHandler(w http.ResponseWriter, r *http.Request) {
+	userInfo, ok := r.Context().Value(userInfoCtxKey).(UserCtxInfo)
+	if !ok || userInfo.Role != "admin" {
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
+
 	uploadFile, fileHeader, err := r.FormFile("file")
 	if err != nil {
 		app.badRequestResponse(w, r, err)
@@ -97,7 +143,7 @@ func (app *application) uploadFileHandler(w http.ResponseWriter, r *http.Request
 		Name: fileHeader.Filename,
 		Size: fileHeader.Size,
 		Creator: store.FileCreator{
-			ID: 13, // TODO Get from tocken
+			ID: userInfo.ID,
 		},
 		Tag:         fileTag,
 		ContentType: fileHeader.Header.Get("Content-Type"),
@@ -109,12 +155,23 @@ func (app *application) uploadFileHandler(w http.ResponseWriter, r *http.Request
 		return
 	}
 
+	if err = app.logUploadedFile(r.Context(), userInfo.ID, file.ID); err != nil {
+		app.internalServerErrorResponse(w, r, err)
+		return
+	}
+
 	if err := jsonDataResponse(w, http.StatusOK, file); err != nil {
 		app.internalServerErrorResponse(w, r, err)
 	}
 }
 
 func (app *application) deleteFileHandler(w http.ResponseWriter, r *http.Request) {
+	userInfo, ok := r.Context().Value(userInfoCtxKey).(UserCtxInfo)
+	if !ok || userInfo.Role != "admin" {
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
+
 	IDParam := chi.URLParam(r, "id")
 	ID, err := strconv.ParseInt(IDParam, 10, 64)
 	if err != nil {
@@ -124,6 +181,11 @@ func (app *application) deleteFileHandler(w http.ResponseWriter, r *http.Request
 
 	err = app.store.Files.DeleteByID(r.Context(), ID)
 	if err != nil {
+		app.internalServerErrorResponse(w, r, err)
+		return
+	}
+
+	if err = app.logDeletedFile(r.Context(), userInfo.ID, ID); err != nil {
 		app.internalServerErrorResponse(w, r, err)
 		return
 	}

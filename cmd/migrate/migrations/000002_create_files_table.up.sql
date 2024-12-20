@@ -7,6 +7,7 @@ CREATE TABLE IF NOT EXISTS files(
     created_by_user_id bigserial NOT NULL,
     created_at timestamp(0) with time zone NOT NULL DEFAULT NOW(),
     updated_at timestamp(0) with time zone NOT NULL DEFAULT NOW(),
+    is_deleted bool DEFAULT FALSE,
     CONSTRAINT fk_user
         FOREIGN KEY (created_by_user_id)
         REFERENCES users(id)
