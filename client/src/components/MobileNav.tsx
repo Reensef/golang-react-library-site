@@ -3,19 +3,15 @@
 import {
   Flex,
   IconButton,
-  HStack,
-  Avatar,
   Menu,
   MenuButton,
   MenuList,
   MenuItem,
-  MenuDivider,
-  Text,
-  Box,
   FlexProps,
   useColorModeValue,
 } from "@chakra-ui/react";
-import { FiMenu, FiBell, FiChevronDown } from "react-icons/fi";
+import { FiMenu } from "react-icons/fi";
+import { FaUserCircle } from "react-icons/fa";
 
 interface MobileProps extends FlexProps {
   onOpen: () => void;
@@ -41,38 +37,20 @@ const MobileNav = ({ onOpen, ...rest }: MobileProps) => {
         aria-label="open menu"
         icon={<FiMenu />}
       />
-      <HStack spacing="6">
-        <IconButton
-          size="lg"
-          variant="ghost"
-          aria-label="open menu"
-          icon={<FiBell />}
-        />
-        <Flex alignItems="center">
-          <Menu>
-            <MenuButton py={2}>
-              <HStack>
-                <Avatar
-                  size="sm"
-                  src="https://images.unsplash.com/photo-1619946794135-5bc917a27793"
-                />
-                <Box>
-                  <Text>Admin</Text>
-                  <Text fontSize="xs" color="gray.600">
-                    Profile
-                  </Text>
-                </Box>
-                <FiChevronDown />
-              </HStack>
-            </MenuButton>
-            <MenuList>
-              <MenuItem>Profile</MenuItem>
-              <MenuDivider />
-              <MenuItem>Sign out</MenuItem>
-            </MenuList>
-          </Menu>
-        </Flex>
-      </HStack>
+      <Flex alignItems="center">
+        <Menu>
+          <MenuButton
+            as={IconButton}
+            aria-label="Actions"
+            size={"lg"}
+            icon={<FaUserCircle />}
+            variant="ghost"
+          />
+          <MenuList>
+            <MenuItem>Sign out</MenuItem>
+          </MenuList>
+        </Menu>
+      </Flex>
     </Flex>
   );
 };

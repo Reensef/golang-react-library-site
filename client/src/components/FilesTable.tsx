@@ -18,6 +18,7 @@ import {
 import { ChevronUpIcon, ChevronDownIcon } from "@chakra-ui/icons";
 import { FiMoreVertical } from "react-icons/fi";
 import axios from "axios";
+import { useJwt } from "react-jwt";
 
 interface FileData {
   id: number;
@@ -85,6 +86,14 @@ const FilesTable = () => {
     size: null as SortDirection,
     downloads: null as SortDirection,
   });
+
+  const token = localStorage.getItem("token");
+  interface TokenPayload {
+    userId: string;
+    role: string;
+  }
+  const { decodedToken } = useJwt<TokenPayload>(token!);
+  const isAdmin = decodedToken?.role === "admin";
 
   const [sortParams, setSortParams] = useState({
     column: "name",
@@ -345,9 +354,11 @@ const FilesTable = () => {
                     <MenuItem onClick={() => handleFileDownload(file.id)}>
                       Download
                     </MenuItem>
-                    <MenuItem onClick={() => handleFileDelete(file.id)}>
-                      Delete
-                    </MenuItem>
+                    {isAdmin && (
+                      <MenuItem onClick={() => handleFileDelete(file.id)}>
+                        Delete
+                      </MenuItem>
+                    )}
                   </MenuList>
                 </Menu>
               </Td>

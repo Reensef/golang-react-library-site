@@ -9,6 +9,7 @@ import {
   BoxProps,
 } from "@chakra-ui/react";
 import NavItem from "./NavItem";
+import { useJwt } from "react-jwt";
 
 import { FiFile, FiUpload, FiArchive } from "react-icons/fi";
 
@@ -18,6 +19,16 @@ interface SidebarProps extends BoxProps {
 }
 
 const SidebarContent = ({ onClose, onTableChange, ...rest }: SidebarProps) => {
+  const token = localStorage.getItem("token");
+
+  interface TokenPayload {
+    userId: string;
+    role: string;
+  }
+
+  const { decodedToken } = useJwt<TokenPayload>(token!);
+  const isAdmin = decodedToken?.role === "admin";
+
   return (
     <Box
       bg={useColorModeValue("white", "gray.900")}
@@ -43,15 +54,19 @@ const SidebarContent = ({ onClose, onTableChange, ...rest }: SidebarProps) => {
           All Files
         </NavItem>
 
-        <NavItem icon={FiUpload} onClick={() => onTableChange("upload")}>
-          Upload
-        </NavItem>
-
-        <Box mt="auto" mb="4" width="full">
-          <NavItem icon={FiArchive} onClick={() => onTableChange("activity")}>
-            User Activity
+        {isAdmin && (
+          <NavItem icon={FiUpload} onClick={() => onTableChange("upload")}>
+            Upload
           </NavItem>
-        </Box>
+        )}
+
+        {isAdmin && (
+          <Box mt="auto" mb="4" width="full">
+            <NavItem icon={FiArchive} onClick={() => onTableChange("activity")}>
+              User Activity
+            </NavItem>
+          </Box>
+        )}
       </Flex>
     </Box>
   );
