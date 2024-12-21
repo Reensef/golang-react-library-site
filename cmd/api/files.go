@@ -89,6 +89,11 @@ func (app *application) downloadFileHandler(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
+	if err = app.store.Files.IncrementDownloadCountByID(r.Context(), ID); err != nil {
+		app.internalServerErrorResponse(w, r, err)
+		return
+	}
+
 	if err := jsonDataResponse(w, http.StatusOK, link.String()); err != nil {
 		app.internalServerErrorResponse(w, r, err)
 	}

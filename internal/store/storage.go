@@ -32,6 +32,7 @@ type Storage struct {
 		GetByID(context.Context, int64) (*File, error)
 		GetAll(ctx context.Context, sortBy string, sortDirection SortDirection, tagID string) ([]*File, error)
 		DeleteByID(context.Context, int64) error
+		IncrementDownloadCountByID(context.Context, int64) error
 	}
 	Tags interface {
 		GetAll(context.Context) ([]*Tag, error)
@@ -43,6 +44,7 @@ type Storage struct {
 	}
 	FilesActionsLog interface {
 		Create(context.Context, *FileActionLog) error
+		GetAll(context.Context) ([]*FileActionLog, error)
 	}
 }
 

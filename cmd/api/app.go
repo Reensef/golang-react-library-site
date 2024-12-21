@@ -106,6 +106,7 @@ func (app *application) mount() http.Handler {
 			r.Get("/open/{id}", app.openFileHandler)
 
 			r.Get("/tags", app.getTagsHandler)
+			r.Get("/actions_log", app.getFilesActionsLogHandler)
 
 			r.Delete("/{id}", app.deleteFileHandler)
 		})

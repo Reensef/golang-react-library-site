@@ -245,3 +245,19 @@ func (s *FilesStore) DeleteByID(ctx context.Context, id int64) error {
 
 	return nil
 }
+
+func (s *FilesStore) IncrementDownloadCountByID(ctx context.Context, id int64) error {
+	query := `
+		UPDATE files SET downloads = downloads + 1, updated_at = CURRENT_TIMESTAMP
+		WHERE files.id = $1
+	`
+	ctx, cancel := context.WithTimeout(ctx, QueryDBTimeout)
+	defer cancel()
+
+	row := s.sqlDB.QueryRowContext(ctx, query, id)
+	if row.Err() != nil {
+		return errors.Join(ErrDataNotFound, row.Err())
+	}
+
+	return nil
+}

@@ -224,6 +224,8 @@ const FilesTable = () => {
       link.setAttribute("download", "file"); // Укажите имя файла
       document.body.appendChild(link);
       link.click();
+
+      fetchFiles();
     } catch (error) {
       console.error("Error downloading file: ", error);
     }
@@ -237,6 +239,7 @@ const FilesTable = () => {
           Authorization: `Bearer ${token}`,
         },
       });
+
       fetchFiles();
     } catch (error) {
       console.error("Error deleting file: ", error);

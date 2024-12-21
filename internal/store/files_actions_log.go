@@ -7,14 +7,14 @@ import (
 )
 
 type FileActionLog struct {
-	ID         int64        `json:"id"`
-	UserID     int64        `json:"user_id"`
-	UserName   string       `json:"user_name"`
-	FileID     int64        `json:"files_id"`
-	FileName   string       `json:"file_name"`
-	ActionID   FileActionLogID `json:"_"`
-	ActionName string       `json:"action_name"`
-	CreatedAt  string       `json:"created_at"`
+	ID         int64           `json:"id"`
+	UserID     int64           `json:"user_id"`
+	UserName   string          `json:"user_name"`
+	FileID     int64           `json:"files_id"`
+	FileName   string          `json:"file_name"`
+	ActionID   FileActionLogID `json:"-"`
+	ActionName string          `json:"action_name"`
+	CreatedAt  string          `json:"created_at"`
 }
 
 type FilesActionsLogStore struct {
@@ -63,19 +63,27 @@ func (s *FilesActionsLogStore) Create(ctx context.Context, action *FileActionLog
 // TODO Добавить пагинацию
 func (s *FilesActionsLogStore) GetAll(ctx context.Context) ([]*FileActionLog, error) {
 	query := `
-		SELECT id, user_id, users.username, file_id, files.name, action_id, files_actions.name, created_at
+		SELECT 
+			files_actions_log.id,
+			files_actions_log.user_id,
+			users.username,
+			files_actions_log.file_id,
+			files.name, 
+			files_actions_log.action_id, 
+			files_actions.name, 
+			files_actions_log.created_at
 		FROM files_actions_log
 		JOIN users ON files_actions_log.user_id = users.id
 		JOIN files ON files_actions_log.file_id = files.id
 		JOIN files_actions ON files_actions_log.action_id = files_actions.id
-		ORDER BY created_at DESC
+		ORDER BY created_at DESC;
 	`
 	ctx, cancel := context.WithTimeout(ctx, QueryDBTimeout)
 	defer cancel()
 
 	datas := []*FileActionLog{}
 
-	rows, err := s.sqlDB.QueryContext(ctx, query, nil)
+	rows, err := s.sqlDB.QueryContext(ctx, query)
 	if err != nil {
 		return nil, errors.Join(ErrDataNotFound, err)
 	}

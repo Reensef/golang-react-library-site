@@ -3,7 +3,7 @@ import { Box, useDisclosure } from "@chakra-ui/react";
 import SidebarContent from "./SidebarContent";
 import MobileNav from "./MobileNav";
 import FilesTable from "./FilesTable";
-import UsersActivityTable from "./UsersActivityTable";
+import FilesActionsTable from "./FilesActionsTable";
 import UploadPage from "./UploadPage";
 
 import { useColorModeValue } from "@chakra-ui/react";
@@ -37,7 +37,7 @@ const DashboardPage = () => {
         ) : selectedTable === "upload" ? (
           <UploadPage />
         ) : selectedTable === "activity" ? (
-          <UsersActivityTable />
+          <FilesActionsTable />
         ) : (
           <Box></Box>
         )}

@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"net/http"
 
 	"github.com/Reensef/golang-react-boolib/internal/store"
 )
@@ -36,4 +37,22 @@ func (app *application) logDownloadedFile(ctx context.Context, userID int64, fil
 		FileID:   fileID,
 		ActionID: store.FileActionDownloaded,
 	})
+}
+
+func (app *application) getFilesActionsLogHandler(w http.ResponseWriter, r *http.Request) {
+	userInfo, ok := r.Context().Value(userInfoCtxKey).(UserCtxInfo)
+	if !ok || userInfo.Role != "admin" {
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
+
+	datas, err := app.store.FilesActionsLog.GetAll(r.Context())
+	if err != nil {
+		app.internalServerErrorResponse(w, r, err)
+		return
+	}
+
+	if err := jsonDataResponse(w, http.StatusOK, datas); err != nil {
+		app.internalServerErrorResponse(w, r, err)
+	}
 }
