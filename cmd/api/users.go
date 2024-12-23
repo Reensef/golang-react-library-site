@@ -20,6 +20,7 @@ type CreateUserPayload struct {
 	Password string `json:"password" validate:"required,max=50"`
 }
 
+// TODO Передавать на бекенд уже хешированный пароль
 func (app *application) createUserHandler(w http.ResponseWriter, r *http.Request) {
 	var payload CreateUserPayload
 	if err := readJson(w, r, &payload); err != nil {

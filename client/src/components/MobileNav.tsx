@@ -1,5 +1,3 @@
-// import React from 'react'
-// 'use client'
 import {
   Flex,
   IconButton,
@@ -18,6 +16,11 @@ interface MobileProps extends FlexProps {
 }
 
 const MobileNav = ({ onOpen, ...rest }: MobileProps) => {
+  const handleSignOut = () => {
+    window.location.href = "/loginpage";
+    window.history.replaceState(null, "", "/loginpage");
+  };
+
   return (
     <Flex
       ml={{ base: 0, md: 60 }}
@@ -25,7 +28,6 @@ const MobileNav = ({ onOpen, ...rest }: MobileProps) => {
       height="20"
       alignItems="center"
       bg={useColorModeValue("white", "gray.900")}
-      // borderBottomWidth="1px"
       borderBottomColor={useColorModeValue("gray.200", "gray.700")}
       justifyContent={{ base: "space-between", md: "flex-end" }}
       {...rest}
@@ -46,7 +48,7 @@ const MobileNav = ({ onOpen, ...rest }: MobileProps) => {
             icon={<FaUserCircle />}
             variant="ghost"
           />
-          <MenuList>
+          <MenuList onClick={() => handleSignOut()}>
             <MenuItem>Sign out</MenuItem>
           </MenuList>
         </Menu>
