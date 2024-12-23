@@ -78,8 +78,8 @@ const formatFileSize = (sizeInKB: number) => {
 
 const FilesTable = () => {
   const [files, setFiles] = useState<FileData[]>([]);
-  const [tags, setTags] = useState<TagData[]>([]); // Состояние для хранения тегов
-  const [selectedTagId, setSelectedTagId] = useState<number | null>(null); // Состояние для выбранного тега
+  const [tags, setTags] = useState<TagData[]>([]);
+  const [selectedTag, setSelectedTag] = useState<TagData | null>(null);
   const [sortDirection, setSortDirection] = useState({
     name: null as SortDirection,
     updated_at: null as SortDirection,
@@ -116,8 +116,8 @@ const FilesTable = () => {
         sort_by: sortParams.column,
         sort_direction: sortParams.direction,
       };
-      if (selectedTagId != null) {
-        params["tag_id"] = selectedTagId;
+      if (selectedTag != null) {
+        params["tag_id"] = selectedTag.id.toString();
       }
       const token = localStorage.getItem("token");
       const response = await axios.get("/api/v1/files", {
@@ -197,10 +197,6 @@ const FilesTable = () => {
     }
   };
 
-  const resetTagFilter = () => {
-    setSelectedTagId(null);
-  };
-
   const handleFileClick = async (id: number) => {
     try {
       const token = localStorage.getItem("token");
@@ -255,6 +251,10 @@ const FilesTable = () => {
     }
   };
 
+  useEffect(() => {
+    fetchFiles();
+  }, [selectedTag]);
+
   return (
     <TableContainer>
       <Table variant="simple">
@@ -277,24 +277,24 @@ const FilesTable = () => {
                   ml={-3}
                   rightIcon={<ChevronDownIcon />}
                 >
-                  Tags
-                  {/* {selectedTagId != null
-                    ? tags.find((tag) => tag.id === selectedTagId)?.name
-                    : "Tags"} */}
+                  Tag
                 </MenuButton>
                 <MenuList>
                   {tags.map((tag) => (
                     <MenuItem
                       key={tag.id}
                       onClick={() => {
-                        if (selectedTagId === tag.id) {
-                          resetTagFilter();
+                        if (selectedTag == null || selectedTag?.id != tag.id) {
+                          setSelectedTag(tag);
                         } else {
-                          setSelectedTagId(tag.id);
+                          setSelectedTag(null);
                         }
-                        fetchFiles();
                       }}
-                      color={selectedTagId === tag.id ? "orange" : "gray.500"}
+                      color={
+                        selectedTag && selectedTag.id === tag.id
+                          ? "blue.500"
+                          : "gray.500"
+                      }
                     >
                       {tag.name}
                     </MenuItem>
