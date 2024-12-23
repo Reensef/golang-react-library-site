@@ -23,6 +23,7 @@ type File struct {
 	Creator     FileCreator `json:"creator" validate:"required"`
 	UUID        uuid.UUID   `json:"uuid"`
 	Tag         string      `json:"tag"`
+	TagID       *int        `json:"-"`
 	ContentType string      `json:"content_type"`
 	Downloads   int64       `json:"downloads"`
 	CreatedAt   string      `json:"created_at"`
@@ -42,7 +43,12 @@ type FilesStore struct {
 func (s *FilesStore) Create(ctx context.Context, file *File, data multipart.File) error {
 	query := `
 		INSERT INTO files (name, size, created_by_user_id)
-		VALUES ($1, $2, $3) RETURNING id, (SELECT username FROM users WHERE id = $3), uuid, created_at, updated_at
+		VALUES ($1, $2, $3)
+		RETURNING files.id,
+			(SELECT username FROM users WHERE id = files.created_by_user_id),
+    		files.uuid,
+    		files.created_at,
+    		files.updated_at
 	`
 	ctx, cancel := context.WithTimeout(ctx, QueryDBTimeout)
 	defer cancel()
@@ -63,6 +69,25 @@ func (s *FilesStore) Create(ctx context.Context, file *File, data multipart.File
 
 	if err != nil {
 		return err
+	}
+
+	if file.TagID != nil {
+		query = `
+			INSERT INTO file_to_tags (file_id, tag_id)
+			VALUES ($1, $2)
+			RETURNING (SELECT name FROM files_tags WHERE id = $2)
+		`
+		err = s.sqlDB.QueryRowContext(
+			ctx,
+			query,
+			file.ID,
+			*file.TagID,
+		).Scan(
+			&file.Tag,
+		)
+		if err != nil {
+			return err
+		}
 	}
 
 	err = s.blobDB.UploadFile(context.Background(), FilesBucketName, file.UUID.String(), data, file.Size, file.ContentType)

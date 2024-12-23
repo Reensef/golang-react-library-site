@@ -136,13 +136,12 @@ func (app *application) uploadFileHandler(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	uploadFile, fileHeader, err := r.FormFile("file")
+	uploadedFile, fileHeader, err := r.FormFile("file")
 	if err != nil {
 		app.badRequestResponse(w, r, err)
 		return
 	}
-	fileTag := r.FormValue("tag")
-	defer uploadFile.Close()
+	defer uploadedFile.Close()
 
 	file := store.File{
 		Name: fileHeader.Filename,
@@ -150,11 +149,19 @@ func (app *application) uploadFileHandler(w http.ResponseWriter, r *http.Request
 		Creator: store.FileCreator{
 			ID: userInfo.ID,
 		},
-		Tag:         fileTag,
 		ContentType: fileHeader.Header.Get("Content-Type"),
 	}
 
-	err = app.store.Files.Create(r.Context(), &file, uploadFile)
+	if tagIDString := r.FormValue("tag_id"); tagIDString != "" {
+		tagID, err := strconv.Atoi(tagIDString)
+		if err != nil {
+			app.badRequestResponse(w, r, ErrInvalidTagID)
+			return
+		}
+		file.TagID = &tagID
+	}
+
+	err = app.store.Files.Create(r.Context(), &file, uploadedFile)
 	if err != nil {
 		app.internalServerErrorResponse(w, r, err)
 		return

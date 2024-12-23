@@ -7,15 +7,24 @@ import {
   Icon,
   useColorModeValue,
   Button,
+  Select,
   Flex,
 } from "@chakra-ui/react";
 import { FiUpload, FiFile } from "react-icons/fi";
 import { MdCheckCircle } from "react-icons/md";
+import axios from "axios";
+
+interface TagData {
+  id: number;
+  name: string;
+}
 
 const UploadPage = () => {
   const [file, setFile] = useState<File | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [tags, setTags] = useState<TagData[]>([]);
+  const [selectedTag, setSelectedTag] = useState<TagData | null>(null);
 
   const borderColor = useColorModeValue("gray.200", "gray.700");
   const hoverBg = useColorModeValue("gray.50", "gray.600");
@@ -30,7 +39,6 @@ const UploadPage = () => {
     event.preventDefault();
 
     if (!file) {
-      alert("Пожалуйста, выберите файл.");
       return;
     }
 
@@ -40,6 +48,9 @@ const UploadPage = () => {
       const token = localStorage.getItem("token");
       const formData = new FormData();
       formData.append("file", file);
+      if (selectedTag) {
+        formData.append("tag_id", selectedTag.id.toString());
+      }
 
       const response = await fetch("/api/v1/files/upload", {
         headers: {
@@ -53,15 +64,13 @@ const UploadPage = () => {
         throw new Error(`Ошибка при загрузке файла: ${response.status}`);
       }
 
-      const result = await response.json();
-      console.log(result.message || "Файл успешно загружен!"); // Логируем сообщение в консоль
-      setShowSuccess(true); // Показываем значок успеха
+      setShowSuccess(true);
     } catch (error) {
       console.error(
         (error as Error).message || "Что-то пошло не так при загрузке файла."
-      ); // Логируем ошибку в консоль
+      );
     } finally {
-      setIsLoading(false); // Завершаем загрузку
+      setIsLoading(false);
     }
   };
 
@@ -89,6 +98,26 @@ const UploadPage = () => {
     return () => clearTimeout(timer);
   }, [showSuccess]);
 
+  useEffect(() => {
+    const fetchTags = async () => {
+      try {
+        const token = localStorage.getItem("token");
+
+        const response = await axios.get("/api/v1/files/tags", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        setTags(response.data.data);
+      } catch (error) {
+        console.error("Error loading tags from the server: ", error);
+      }
+    };
+
+    fetchTags();
+  }, []);
+
   const textColor = useColorModeValue("gray.600", "gray.400");
 
   return (
@@ -101,6 +130,20 @@ const UploadPage = () => {
     >
       <form onSubmit={handleSubmit}>
         <Flex direction="column" alignItems="center">
+          <Select
+            placeholder="Select tag"
+            width="300px"
+            onChange={(e) => {
+              const selectedTag = tags.find(
+                (tag) => tag.name === e.target.value
+              );
+              setSelectedTag(selectedTag!);
+            }}
+          >
+            {tags.map((tag) => (
+              <option value={tag.name}>{tag.name}</option>
+            ))}
+          </Select>
           <Box
             width="300px"
             height="300px"
@@ -115,6 +158,7 @@ const UploadPage = () => {
             onDragLeave={preventDefaults}
             _hover={{ bg: hoverBg }}
             p={4}
+            mt={4}
           >
             {!file && !showSuccess ? (
               <>
@@ -149,17 +193,15 @@ const UploadPage = () => {
           <Button type="submit" mt={4} disabled={isLoading}>
             Загрузить файл
           </Button>
-          {file && (
-            <Button
-              onClick={() => {
-                setFile(null);
-                setShowSuccess(false);
-              }}
-              mt={4}
-            >
-              Сбросить файл
-            </Button>
-          )}
+          <Button
+            onClick={() => {
+              setFile(null);
+              setShowSuccess(false);
+            }}
+            mt={4}
+          >
+            Сбросить файл
+          </Button>
         </Flex>
       </form>
     </Box>

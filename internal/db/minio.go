@@ -30,7 +30,17 @@ func NewMinioBlobStore(endpoint, accessKey, secretKey string, useSSL bool) (*Min
 }
 
 func (m *MinioBlobStore) UploadFile(ctx context.Context, bucketName, objectName string, file io.Reader, size int64, contentType string) error {
-	_, err := m.client.PutObject(ctx, bucketName, objectName, file, size, minio.PutObjectOptions{
+	ok, err := m.client.BucketExists(ctx, bucketName)
+	if err != nil {
+		return err
+	}
+	if !ok {
+		err := m.client.MakeBucket(ctx, bucketName, minio.MakeBucketOptions{})
+		if err != nil {
+			return err
+		}
+	}
+	_, err = m.client.PutObject(ctx, bucketName, objectName, file, size, minio.PutObjectOptions{
 		ContentType: contentType,
 	})
 	return err
