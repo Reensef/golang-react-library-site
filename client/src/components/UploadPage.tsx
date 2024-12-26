@@ -61,13 +61,14 @@ const UploadPage = () => {
       });
 
       if (!response.ok) {
-        throw new Error(`Ошибка при загрузке файла: ${response.status}`);
+        throw new Error(`Error loading file: ${response.status}`);
       }
 
       setShowSuccess(true);
     } catch (error) {
       console.error(
-        (error as Error).message || "Что-то пошло не так при загрузке файла."
+        (error as Error).message ||
+          "Something went wrong while loading the file."
       );
     } finally {
       setIsLoading(false);
@@ -173,7 +174,7 @@ const UploadPage = () => {
                   <label htmlFor="fileInput">
                     <Icon as={FiUpload} boxSize={12} color="blue.500" />
                     <Text fontSize="lg" color={textColor}>
-                      Перетащите файлы сюда или кликните для выбора
+                      Drag files here or click to select
                     </Text>
                   </label>
                 </VStack>
@@ -181,7 +182,7 @@ const UploadPage = () => {
             ) : showSuccess ? (
               <VStack spacing={4} height="100%" justifyContent="center">
                 <Icon as={MdCheckCircle} boxSize={12} color="green.400" />
-                <Text>Успех!</Text>
+                <Text>Success!</Text>
               </VStack>
             ) : (
               <VStack spacing={4} height="100%" justifyContent="center">
@@ -191,7 +192,7 @@ const UploadPage = () => {
             )}
           </Box>
           <Button type="submit" mt={4} disabled={isLoading}>
-            Загрузить файл
+            Upload file
           </Button>
           <Button
             onClick={() => {
@@ -200,7 +201,7 @@ const UploadPage = () => {
             }}
             mt={4}
           >
-            Сбросить файл
+            Reset file
           </Button>
         </Flex>
       </form>

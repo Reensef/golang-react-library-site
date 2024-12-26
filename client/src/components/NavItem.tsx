@@ -1,4 +1,3 @@
-// NavItem.tsx
 import React from 'react'
 import { Box, Flex, Icon, FlexProps } from '@chakra-ui/react'
 import { IconType } from 'react-icons'

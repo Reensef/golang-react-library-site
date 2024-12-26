@@ -90,7 +90,14 @@ func (s *FilesStore) Create(ctx context.Context, file *File, data multipart.File
 		}
 	}
 
-	err = s.blobDB.UploadFile(context.Background(), FilesBucketName, file.UUID.String(), data, file.Size, file.ContentType)
+	err = s.blobDB.UploadFile(
+		context.Background(),
+		FilesBucketName,
+		file.UUID.String(),
+		data,
+		file.Size,
+		file.ContentType,
+	)
 	if err != nil {
 		return err
 	}
@@ -113,7 +120,6 @@ func (s *FilesStore) GetAccessLinkByID(ctx context.Context, id int64) (*url.URL,
 	}
 
 	var uuid string
-
 	err := row.Scan(
 		&uuid,
 	)
@@ -128,7 +134,6 @@ func (s *FilesStore) GetAccessLinkByID(ctx context.Context, id int64) (*url.URL,
 	}
 
 	return presignedURL, nil
-
 }
 
 func (s *FilesStore) GetByID(ctx context.Context, id int64) (*File, error) {
@@ -144,12 +149,10 @@ func (s *FilesStore) GetByID(ctx context.Context, id int64) (*File, error) {
 	defer cancel()
 
 	data := &File{}
-
 	row := s.sqlDB.QueryRowContext(ctx, query, id)
 	if row.Err() != nil {
 		return nil, errors.Join(ErrDataNotFound, row.Err())
 	}
-
 	err := row.Scan(
 		&data.ID,
 		&data.Name,

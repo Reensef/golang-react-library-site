@@ -48,7 +48,7 @@ const SortButton = ({
   const getSortIcon = () => {
     if (sortDirection === "asc") return <ChevronUpIcon />;
     if (sortDirection === "desc") return <ChevronDownIcon />;
-    return undefined; // Иконка отсутствует
+    return undefined;
   };
 
   return (
@@ -207,7 +207,7 @@ const FilesTable = () => {
       });
 
       const link = response.data.data;
-      window.open(link, "_blank"); // Открываем ссылку в новом окне
+      window.open(link, "_blank");
     } catch (error) {
       console.error("Error getting file link: ", error);
     }
@@ -220,13 +220,13 @@ const FilesTable = () => {
         headers: {
           Authorization: `Bearer ${token}`,
         },
-        responseType: "blob", // Для загрузки файла
+        responseType: "blob",
       });
 
       const url = window.URL.createObjectURL(new Blob([response.data]));
       const link = document.createElement("a");
       link.href = url;
-      link.setAttribute("download", "file"); // Укажите имя файла
+      link.setAttribute("download", "file"); 
       document.body.appendChild(link);
       link.click();
 

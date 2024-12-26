@@ -9,7 +9,6 @@ const LoginPage = () => {
   const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    // Отправляем данные на сервер
     try {
       const response = await fetch("http://localhost:5000/login", {
         method: "POST",
@@ -19,20 +18,20 @@ const LoginPage = () => {
 
       if (response.ok) {
         const data = await response.json();
-        localStorage.setItem("token", data.token); // Сохраняем токен
-        navigate("/dashboard"); // Перенаправляем на защищенную страницу
+        localStorage.setItem("token", data.token);
+        navigate("/dashboard");
       } else {
-        alert("Неверный логин или пароль");
+        alert("Incorrect login or password");
       }
     } catch (error) {
-      console.error("Ошибка авторизации:", error);
-      alert("Ошибка соединения с сервером");
+      console.error("Authorization error:", error);
+      alert("Error connecting to server");
     }
   };
 
   return (
     <div>
-      <h1>Авторизация</h1>
+      <h1>Authorization</h1>
       <form onSubmit={handleLogin}>
         <input
           type="email"
@@ -46,7 +45,7 @@ const LoginPage = () => {
           value={password}
           onChange={(e) => setPassword(e.target.value)}
         />
-        <button type="submit">Войти</button>
+        <button type="submit">Enter</button>
       </form>
     </div>
   );
