@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"encoding/json"
-	"log"
 	"net/http"
 
 	"github.com/Reensef/golang-react-boolib/internal/auth"
@@ -20,8 +19,6 @@ func (app *application) loginHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Invalid input", http.StatusBadRequest)
 		return
 	}
-
-	log.Println(creds)
 
 	user, err := app.store.Users.GetByEmail(r.Context(), creds.Email)
 	if err != nil {

@@ -9,6 +9,7 @@ import (
 
 var jwtSecret = []byte("super-secret")
 
+// TODO Переделать на два токена. Access and refresh
 func GenerateJWT(userID int64, role string) (string, error) {
 	expirationTime := time.Now().Add(24 * time.Hour)
 

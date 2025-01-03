@@ -43,7 +43,7 @@ func main() {
 		cfg.sqlDBConfig.maxIdleTime,
 	)
 	if err != nil {
-		log.Panic(err)
+		log.Fatal("Error connect to sql DB", err)
 	}
 
 	defer sqlDB.Close()
@@ -54,7 +54,7 @@ func main() {
 		cfg.blobDBConfig.key,
 	)
 	if err != nil {
-		log.Panic(err)
+		log.Fatal("Error connect to blob DB", err)
 	}
 
 	store := store.NewStorage(sqlDB, blobDB)
