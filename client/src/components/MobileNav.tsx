@@ -17,6 +17,7 @@ interface MobileProps extends FlexProps {
 
 const MobileNav = ({ onOpen, ...rest }: MobileProps) => {
   const handleSignOut = () => {
+    localStorage.removeItem("token");
     window.location.href = "/loginpage";
     window.history.replaceState(null, "", "/loginpage");
   };
